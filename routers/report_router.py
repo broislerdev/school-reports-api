@@ -3,8 +3,11 @@ from fastapi import APIRouter
 from database.connection import SessionLocal
 from db_models.report_model import Report
 from schemas.report_schema import ReportCreate
+from services.groq_service import classify_complaint
+import logging
 
 report_router = APIRouter(prefix="/reports", tags=["report"])
+logger = logging.getLogger(__name__)
 
 
 @report_router.get("/")
@@ -27,14 +30,19 @@ async def reports():
     session.close()
     return report_list
 
-
 @report_router.post("/")
 async def create_report(report: ReportCreate):
+    try:
+        category = classify_complaint(report.message)
+    except Exception:
+        logger.exception('Error classifying a report with Groq')
+        category = 'pendente'
+
     new_report = Report(
         student_name=report.student_name,
         message=report.message,
-        category="pendente",
-        created_at=datetime.now(),
+        category=category,
+        created_at=datetime.now().replace(microsecond=0),
         status="novo",
     )
 
