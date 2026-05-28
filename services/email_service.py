@@ -10,8 +10,8 @@ client = SendGridAPIClient(api_key=os.getenv('SENDGRID_API_KEY'))
 def send_report_email(report_id, student_name, complaint_message, category, created_at, status):
 
     email_message = Mail(
-    from_email='urielbroisler@gmail.com',
-    to_emails='broisler.uriel@gmail.com',
+    from_email=os.getenv('SENDGRID_FROM_EMAIL'),
+    to_emails=os.getenv('COORDINATION_EMAIL'),
     subject='Nova denúncia recebida!',
     html_content=f"""
         <h2>Nova denúncia recebida</h2>
