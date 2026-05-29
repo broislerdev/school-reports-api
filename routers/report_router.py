@@ -1,8 +1,8 @@
 from datetime import datetime
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from database.connection import SessionLocal
 from db_models.report_model import Report
-from schemas.report_schema import ReportCreate
+from schemas.report_schema import ReportCreate, ReportStatusUpdate
 from services.groq_service import classify_complaint
 from services.email_service import send_report_email
 import logging
@@ -30,6 +30,24 @@ async def reports():
 
     session.close()
     return report_list
+
+@report_router.get("/{report_id}")
+async def search_report(report_id: int):
+    session = SessionLocal()
+    search = session.query(Report).filter(Report.report_id == report_id).first()
+    if not search:
+        session.close()
+        raise HTTPException(status_code=404, detail='ID não encontrado')
+    response = {
+        "report_id": search.report_id,
+        "student_name": search.student_name,
+        "message": search.message,
+        "category": search.category,
+        "created_at": search.created_at,
+        "status": search.status
+    }
+    session.close()
+    return response
 
 @report_router.post("/")
 async def create_report(report: ReportCreate):
@@ -67,3 +85,28 @@ async def create_report(report: ReportCreate):
 
     session.close()
     return response
+
+
+@report_router.patch("/{report_id}/status")
+async def patch_status(report_id: int, status_update: ReportStatusUpdate):
+    session = SessionLocal()
+    search = session.query(Report).filter(Report.report_id == report_id).first()
+    if not search:
+        session.close()
+        raise HTTPException(status_code=404, detail='ID não encontrado')
+    search.status = status_update.status.value    
+    session.commit()
+    session.refresh(search)
+
+    response = {
+        "report_id": search.report_id,
+        "student_name": search.student_name,
+        "message": search.message,
+        "category": search.category,
+        "created_at": search.created_at,
+        "status": search.status
+    }
+    
+    session.close()
+    return response
+   
