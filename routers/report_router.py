@@ -4,6 +4,7 @@ from database.connection import SessionLocal
 from db_models.report_model import Report
 from schemas.report_schema import ReportCreate
 from services.groq_service import classify_complaint
+from services.email_service import send_report_email
 import logging
 
 report_router = APIRouter(prefix="/reports", tags=["report"])
@@ -59,6 +60,10 @@ async def create_report(report: ReportCreate):
         "created_at": new_report.created_at,
         "status": new_report.status,
     }
+    try:
+        send_report_email(new_report.report_id, new_report.student_name, new_report.message, new_report.category, new_report.created_at, new_report.status)
+    except Exception:
+        logger.exception('Error sending the email')
 
     session.close()
     return response

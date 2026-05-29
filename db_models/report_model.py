@@ -2,7 +2,7 @@ from sqlalchemy import Column, DateTime, Integer, String
 from database.connection import base
 
 class Report(base):
-    __tablename__ = "Reports"
+    __tablename__ = "reports"
 
     report_id = Column(Integer, primary_key=True, autoincrement=True)
     student_name = Column(String, nullable=True)
