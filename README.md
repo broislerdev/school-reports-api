@@ -62,7 +62,7 @@ http://localhost:8000/docs
 |POST  |`/reports/`           |Submit a new report |
 |PATCH |`/reports/{id}/status`|Update report status|
 
------
+
 
 ## 🔁 Report Flow
 
